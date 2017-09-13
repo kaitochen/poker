@@ -50,15 +50,17 @@
 	var card=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 	var flag=0;
 function random(){
-	for(var i=0;i<5;i++){
-		arr[i]=Math.ceil(Math.random()*13);
-	}
-	for(var j=0;j<5;j++){
-		document.getElementsByClassName('num')[j].innerHTML=card[arr[j]-1];
-	}	
+	// for(var i=0;i<5;i++){
+	// 	arr[i]=Math.ceil(Math.random()*13);
+	// }
+	// for(var j=0;j<5;j++){
+	// 	document.getElementsByClassName('num')[j].innerHTML=card[arr[j]-1];
+	// }	
 	flag=0;
+	arr=[11,12,4,5,1];
 }
 function calculate(){
+	console.log(arr)
 	var arr2=[];
 	var result=0;
 	var sum=0;
@@ -73,11 +75,16 @@ function calculate(){
 			arr2[i]=arr[i];
 		}
 	}
+	console.log(arr2);
 	result=sum%10;
+	// console.log('result:'+result);
+	// console.log((arr2[0]+arr2[1])%10==result);
 	for(var m=0;m<5;m++){
 		for(var n=m+1;n<5;n++){
+			console.log(m+' '+n);
 			if((arr2[m]+arr2[n])%10==(result)){
-				if((sum-arr[m]-arr[n])%10==0){
+				console.log((sum-arr2[m]-arr2[n]));
+				if((sum-arr2[m]-arr2[n])%10==0){
 					num1=m;
 					num2=n;
 					flag++;

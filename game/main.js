@@ -1,7 +1,8 @@
 var _width=window.innerWidth*2;
 var _height=window.innerHeight*2;
 var game = new Phaser.Game(_width,_height,Phaser.AUTO, "game", {preload:preload,create:create,update:update});
-
+var cache=new Phaser.Cache(game);
+var loader=new Phaser.Loader(game);
 // var pokerObj={
 // 	king:{heart:0,spade:1,diamond:2,club:3},
 // 	queen:{heart:4,spade:5,diamond:6,club:7},
@@ -33,11 +34,15 @@ var gameFlag=false;
 var readyFlag=false;
 var deal=0;
 var once=0;
+var cathectic=0;
+var calculation=0;
+var integration=0;
 var readyCount=0;
 var mine={};
 var person1,person2,person3;
 var qiang={};
 var ready={};
+var show;
 var map={map1:15,map2:10,map3:-10};
 var locationLeft=-20;
 var locationRight=20;
@@ -45,6 +50,9 @@ var timer;
 var personState=[0,0,0,0,0,0,0,0,0];
 var personQiang=[0,0,0,0,0,0,0,0,0];
 var max=[0,0,0,0,0,0,0,0,0];
+var zhuang;
+var check=false;
+var poked=[];
 // document.getElementById("game").width=width;
 // document.getElementById("game").height=height;
 function preload(){
@@ -56,44 +64,202 @@ function preload(){
 	game.load.spritesheet('poker','pokerSheet.png',100,130);
 	game.load.spritesheet('btn','btn.png',120,120);
 	game.load.spritesheet('ready','ready.png',100,100);
+	game.load.image('zhuang','zhuang.png');
+	game.load.spritesheet('cathectic','cathectic.png',60,40);
+	game.load.spritesheet('result','result.png',100,50);
+	game.load.image('showBtn','show.png',120,120);
 }
 function create(){
+	// loader.image('new','https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1505306847393&di=b4c2d0fb961a7cdf1c8863cf5467efad&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01d62258731da9a801219c770c34d8.jpg%40900w_1l_2o_100sh.jpg');
+	// game.cache.addImage('new','https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1505306847393&di=b4c2d0fb961a7cdf1c8863cf5467efad&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01d62258731da9a801219c770c34d8.jpg%40900w_1l_2o_100sh.jpg','');
+	// console.log(cache.checkImageKey('new'));
 	game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 	game.input.maxPointers = 1;
 	var background = game.add.sprite(0,0,'background');
 	background.width=_width;
 	background.height=_height;
-	
 	mine=person(0,0,0);
 	mine.person=game.add.sprite(10,_height-150,'person');
 	mine.person.width=100;
 	mine.person.height=100;
 	mine.cover=game.add.sprite(10,_height-60,'textback');
-	mine.point=game.add.text(50 ,_height-55,'10',{font: '20px',fill:'#fff',align: "center"});
+	mine.num=game.add.text(50 ,_height-55,'0',{font: '20px',fill:'#fff',align: "center"});
+	mine.point=0;
+	mine.id=0;
 	mine.readyState=0;
 	mine.multiple=0;
 	mine.zhuang=0;
+	mine.cathectic=game.add.sprite(25,_height-200,'cathectic');
+	mine.cathectic.visible=false;
+	mine.arr=[];
+	mine.result=game.add.sprite((_width-100)/2,_height-250,'result',0);
+	mine.result.visible=false;
+	mine.total;
 
 	qiang.one=game.add.sprite(150,_height-270,'btn',btn.one);
 	qiang.two=game.add.sprite(270,_height-270,'btn',btn.two);
+	qiang.three=game.add.sprite(270,_height-270,'btn',btn.three)
 	qiang.four=game.add.sprite(390,_height-270,'btn',btn.four);
+	qiang.five=game.add.sprite(390,_height-270,'btn',btn.five);
 	qiang.none=game.add.sprite(510,_height-270,'btn',btn.none);
 	qiang.one.visible=false;
 	qiang.two.visible=false;
+	qiang.three.visible=false;
 	qiang.four.visible=false;
+	qiang.five.visible=false;
 	qiang.none.visible=false;
 	qiang.one.events.onInputDown.add(function(){
-		personQiang[0]=1;
+		if(deal>0){
+			personQiang[0]=1;
+			max[0]=1;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.four.visible=false;
+			qiang.none.visible=false;
+			mine.cathectic.frame=1;
+			mine.cathectic.visible=true;
+			check=true;
+		}
+		if(cathectic>0){
+			mine.multiple=1;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.three.visible=false;
+			qiang.four.visible=false;
+			qiang.five.visible=false;
+			check=true;			
+			mine.cathectic.frame=1;
+			mine.cathectic.visible=true;
+		}
 	},this);	
 	qiang.two.events.onInputDown.add(function(){
-		personQiang[0]=2;
+		if(deal>0){
+			personQiang[0]=2;
+			max[0]=2;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.four.visible=false;
+			qiang.none.visible=false;
+			check=true;			
+			mine.cathectic.frame=2;
+			mine.cathectic.visible=true;
+		}
+		if(cathectic>0){
+			mine.multiple=2;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.three.visible=false;
+			qiang.four.visible=false;
+			qiang.five.visible=false;
+			check=true;			
+			mine.cathectic.frame=2;
+			mine.cathectic.visible=true;
+		}
+	},this);
+	qiang.three.events.onInputDown.add(function(){
+		if(cathectic>0){
+			mine.multiple=3;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.three.visible=false;
+			qiang.four.visible=false;
+			qiang.five.visible=false;
+			check=true;			
+			mine.cathectic.frame=3;
+			mine.cathectic.visible=true;
+		}
 	},this);	
 	qiang.four.events.onInputDown.add(function(){
-		personQiang[0]=3;
+		if(deal>0){
+			personQiang[0]=4;
+			max[0]=4;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.four.visible=false;
+			qiang.none.visible=false;
+			check=true;		
+			mine.cathectic.frame=4;
+			mine.cathectic.visible=true;
+		}
+		if(cathectic>0){
+			mine.multiple=4;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.three.visible=false;
+			qiang.four.visible=false;
+			qiang.five.visible=false;
+			check=true;			
+			mine.cathectic.frame=4;
+			mine.cathectic.visible=true;
+		}
+	},this);		
+	qiang.five.events.onInputDown.add(function(){
+		if(cathectic>0){
+			mine.multiple=5;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.three.visible=false;
+			qiang.four.visible=false;
+			qiang.five.visible=false;
+			check=true;			
+			mine.cathectic.frame=5;
+			mine.cathectic.visible=true;
+		}
 	},this);	
 	qiang.none.events.onInputDown.add(function(){
-		personQiang[0]=0;
+		if(deal>0){
+			personQiang[0]=0;
+			max[0]=0;
+			qiang.one.visible=false;
+			qiang.two.visible=false;
+			qiang.four.visible=false;
+			qiang.none.visible=false;
+			check=true;			
+			mine.cathectic.frame=0;
+			mine.cathectic.visible=true;
+		}
 	},this);
+
+	show=game.add.sprite((_width-100)/2,_height-250,'showBtn');
+	show.visible=false;
+	show.events.onInputDown.add(function(){
+		calculate(mine);
+		calculation=0;
+		readyDelay=0;
+		check=false;
+		timer.visible=false;
+		integration=1;
+		if(person1.readyState==1){
+			randomPoker(person1,1);
+			randomPoker(person1,2);
+			randomPoker(person1,3);
+			randomPoker(person1,4);
+			randomPoker(person1,5);	
+			calculate(person1);	
+		}
+		if(person2.readyState==1){
+			randomPoker(person2,1);
+			randomPoker(person2,2);
+			randomPoker(person2,3);
+			randomPoker(person2,4);
+			randomPoker(person2,5);	
+			calculate(person2);
+		}
+		if(person3.readyState==1){
+			randomPoker(person3,1);
+			randomPoker(person3,2);
+			randomPoker(person3,3);
+			randomPoker(person3,4);
+			randomPoker(person3,5);
+			calculate(person3);
+		}
+		show.visible=false;
+		// console.log(mine);
+		// console.log(person1);
+		// console.log(person2);
+		// console.log(person3);
+	},this);
+
 	ready.btn=game.add.sprite((_width-100)/2,_height-250,'ready',ready.btn);
 	ready.text=game.add.sprite((_width-100)/2,_height-250,'ready',1);
 	ready.text.visible=false;
@@ -105,14 +271,19 @@ function create(){
 		readyCount++;
 		mine.readyState=1;
 		personState[0]=1;
-		// mine.card1.frame=pokerObj.king['heart'];
-		// mine.card2.frame=pokerObj.seven['spade'];
-		// mine.card3.frame=pokerObj.six['club'];
-		// mine.card4.frame=pokerObj.two['diamond'];
+		randomPoker(mine,1);
+		randomPoker(mine,2);
+		randomPoker(mine,3);
+		randomPoker(mine,4);
 		// mine.card5.inputEnabled=true;
-		// mine.card5.events.onInputDown.add(function(){
-		// 	mine.card5.frame=24;
-		// },game);
+		mine.card5.events.onInputDown.add(function(){
+			// console.log(mine.card5.frame=22);
+			randomPoker(mine,5);
+			check=true;
+			mine.card5.inputEnabled=false;
+			show.visible=true;
+			show.inputEnabled=true;
+		},game);
 	},this);
 
 	person1=person((_width-200),_height*2/3+20,1);
@@ -121,17 +292,95 @@ function create(){
 	person1.person=game.add.sprite((_width-100),_height*2/3+20,'person');
 	person1.person.width=80;
 	person1.person.height=80;	
+	person1.cathectic=game.add.sprite((_width-100),_height*2/3-30,'cathectic',1);
+	person1.cathectic.visible=false;
+	person1.result=game.add.sprite((_width-200),_height*2/3-30,'result',0);
+	person1.result.visible=false;
+	person1.num=game.add.text((_width-65),_height*2/3+100,'0',{font: '20px',fill:'#fff',align: "center"});
+
 	person2.person=game.add.sprite((_width-100),_height/2+20,'person');
 	person2.person.width=80;
 	person2.person.height=80;	
+	person2.cathectic=game.add.sprite((_width-100),_height/2-30,'cathectic',1);
+	person2.cathectic.visible=false;
+	person2.result=game.add.sprite((_width-200),_height/2-30,'result',0);
+	person2.result.visible=false;
+	person2.num=game.add.text((_width-65),_height/2+100,'0',{font: '20px',fill:'#fff',align: "center"});
+
 	person3.person=game.add.sprite(20,_height*2/3+20,'person');
 	person3.person.width=80;
 	person3.person.height=80;
+	person3.cathectic=game.add.sprite(20,_height*2/3-30,'cathectic',1);
+	person3.cathectic.visible=false;
+	person3.result=game.add.sprite(120,_height*2/3-30,'result',0);
+	person3.result.visible=false;
+	person3.num=game.add.text(50,_height*2/3+100,'0',{font: '20px',fill:'#fff',align: "center"});
 
 	timer=game.add.text(_width/2-20,_height*2/3,'10',{font:'40px',fill:'#f00'});
 	timer.visible=false;
+	zhuang=game.add.sprite(-50,-50,'zhuang');
 }
-
+function randomPoker(obj,n){
+	var num=Math.floor(Math.random()*52);
+	if(poked.indexOf(num)==-1){
+		obj['card'+n].frame=num;
+		obj.arr.push(num);
+		poked.push(num);
+	}else{
+		randomPoker(obj,n);
+	}
+}
+function calculate(obj){
+	console.log(obj.id);
+	var arr=obj.arr;
+	var arr2=[];
+	for(var i=0;i<5;i++){
+		arr2[i]=13-Math.floor(arr[i]/4);
+	}
+	var arr3=[];
+	var result=0;
+	var sum=0;
+	var num1;
+	var num2;
+	var flagx=0;
+	console.log(arr2);
+	for(var i=0;i<5;i++){
+		if(arr2[i]>=10&&arr2[i]<=13){
+			sum+=0;
+			arr3[i]=0;	
+		}else{
+			sum+=arr2[i];
+			arr3[i]=arr2[i];
+		}
+	}
+	result=sum%10;
+	console.log(sum+' '+result);
+	for(var m=0;m<5;m++){
+		for(var n=m+1;n<5;n++){
+			if((arr3[m]+arr3[n])%10==(result)){
+				if((sum-arr3[m]-arr3[n])%10==0){
+					num1=m;
+					num2=n;
+					flagx++;
+				}
+			}
+		}
+	}
+	if(flagx>0){
+		if(result==0){
+			obj.result.frame=10;
+			obj.total=10;
+		}else{
+			obj.result.frame=result;
+			obj.total=result;
+		}
+	}else{
+		obj.result.frame=0;
+		obj.total=0;
+	}
+	obj.result.visible=true;
+	// console.log(arr2);
+}
 function person(w,h,id){
 	var obj={card1:'',card2:'',card3:'',card4:'',card5:''};
 	for(var k in obj){
@@ -157,39 +406,96 @@ function person(w,h,id){
 		},game);
 		obj.multiple=0;
 		obj.zhuang=0;
+		obj.arr=[];
+		obj.point=0;
 	}
 	return obj;	
 }
-
+function integarte(obj1,obj2){
+	if(obj1.total>obj2.total){
+		if(obj1.total==10){
+			obj1.point+=obj1.multiple*obj2.multiple*4;
+			obj2.point-=obj1.multiple*obj2.multiple*4;
+		}else if(obj1.total==9){
+			obj1.point+=obj1.multiple*obj2.multiple*3;
+			obj2.point-=obj1.multiple*obj2.multiple*3;
+		}else if(obj1.total==8||obj1.total==7){
+			obj1.point+=obj1.multiple*obj2.multiple*2;
+			obj2.point-=obj1.multiple*obj2.multiple*2;
+		}else{
+			obj1.point+=obj1.multiple*obj2.multiple*1;
+			obj2.point-=obj1.multiple*obj2.multiple*1;
+		}
+	}else if(obj1.total==obj2.total){
+		obj1.arr.sort(function(a,b){return a-b});
+		obj2.arr.sort(function(a,b){return a-b});
+		if(obj1.arr[0]<obj2.arr[0]){
+			if(obj1.total==10){
+				obj1.point+=obj1.multiple*obj2.multiple*4;
+				obj2.point-=obj1.multiple*obj2.multiple*4;
+			}else if(obj1.total==9){
+				obj1.point+=obj1.multiple*obj2.multiple*3;
+				obj2.point-=obj1.multiple*obj2.multiple*3;
+			}else if(obj1.total==8||obj1.total==7){
+				obj1.point+=obj1.multiple*obj2.multiple*2;
+				obj2.point-=obj1.multiple*obj2.multiple*2;
+			}else{
+				obj1.point+=obj1.multiple*obj2.multiple*1;
+				obj2.point-=obj1.multiple*obj2.multiple*1;
+			}
+		}else if(obj1.arr[0]>obj2.arr[0]){
+			if(obj2.total==10){
+				obj2.point+=obj2.multiple*obj1.multiple*4;
+				obj1.point-=obj2.multiple*obj1.multiple*4;
+			}else if(obj2.total==9){
+				obj2.point+=obj2.multiple*obj1.multiple*3;
+				obj1.point-=obj2.multiple*obj1.multiple*3;
+			}else if(obj2.total==8||obj2.total==7){
+				obj2.point+=obj2.multiple*obj1.multiple*2;
+				obj1.point-=obj2.multiple*obj1.multiple*2;
+			}else{
+				obj2.point+=obj2.multiple*obj1.multiple*1;
+				obj1.point-=obj2.multiple*obj1.multiple*1;
+			}
+		}
+	}else if(obj1.total<obj2.total){
+		if(obj2.total==10){
+			obj2.point+=obj2.multiple*obj1.multiple*4;
+			obj1.point-=obj2.multiple*obj1.multiple*4;
+		}else if(obj2.total==9){
+			obj2.point+=obj2.multiple*obj1.multiple*3;
+			obj1.point-=obj2.multiple*obj1.multiple*3;
+		}else if(obj2.total==8||obj2.total==7){
+			obj2.point+=obj2.multiple*obj1.multiple*2;
+			obj1.point-=obj2.multiple*obj1.multiple*2;
+		}else{
+			obj2.point+=obj2.multiple*obj1.multiple*1;
+			obj1.point-=obj2.multiple*obj1.multiple*1;
+		}
+	}
+	obj1.num.setText(obj1.point);
+	obj2.num.setText(obj2.point);
+}
 function update(){
 	if(!gameFlag){
 		if(readyCount>1){
 			timer.visible=true;
-			if(readyDelay>600&&readyDelay%10==0){
+			if(readyDelay>600){
 				ready.btn.visible=false;
 				ready.text.visible=false;
-				mine.readyState=0;
+				// mine.readyState=0;
 				person1.ready.visible=false;
 				person1.btn.visible=false;
-				person1.readyState=0;				
+				// person1.readyState=0;				
 				person2.ready.visible=false;
 				person2.btn.visible=false;				
-				person2.readyState=0;				
+				// person2.readyState=0;				
 				person3.ready.visible=false;
 				person3.btn.visible=false;
-				person3.readyState=0;				
+				// person3.readyState=0;				
 
 				timer.visible=false;
-				if(mine.ready>0){
-					mine.card1.frame=pokerObj.king['heart'];
-					mine.card2.frame=pokerObj.seven['spade'];
-					mine.card3.frame=pokerObj.six['club'];
-					mine.card4.frame=pokerObj.two['diamond'];
-					mine.card5.inputEnabled=true;
-					mine.card5.events.onInputDown.add(function(){
-						mine.card5.frame=24;
-					},game);
-				}
+
 				if(animation1<1){
 					if(personState[0]==1){
 						mine.card1.x-=18;
@@ -301,6 +607,10 @@ function update(){
 					readyDelay=0;
 				}
 			}else{
+				if(readyCount>3){
+					readyDelay=700;
+					timer.visible=false;
+				}
 				readyDelay+=1;
 				timer.text=(Math.floor((600-readyDelay)/60)>=0?Math.floor((600-readyDelay)/60):0);
 
@@ -308,34 +618,31 @@ function update(){
 		}
 		if(deal>0){
 			timer.visible=true;
+			if(personState[0]==1&&!check){
+				qiang.one.inputEnabled=true;
+				qiang.two.inputEnabled=true;
+				qiang.four.inputEnabled=true;
+				qiang.none.inputEnabled=true;
+				qiang.one.visible=true;
+				qiang.two.visible=true;
+				qiang.four.visible=true;
+				qiang.none.visible=true;
+			}
 			if(readyDelay>300){
-				if(personState[0]==1){
-					qiang.one.visible=true;
-					qiang.two.visible=true;
-					qiang.four.visible=true;
-					qiang.none.visible=true;
-				}
-				if(personState[1]==1){
-					personQiang[1]=Math.floor(Math.random()*4);
-					max[1]=personQiang[1];
-				}			
-				if(personState[2]==1){
-					personQiang[2]=Math.floor(Math.random()*4);
-					max[2]=personQiang[2];
-
-				}			
-				if(personState[3]==1){
-					personQiang[3]=Math.floor(Math.random()*4)
-					max[3]=personQiang[3];
-
+				timer.visible=false;
+				if(personState[0]==1&&!check){
+					qiang.one.visible=false;
+					qiang.two.visible=false;
+					qiang.four.visible=false;
+					qiang.none.visible=false;
 				}
 				deal=0;
 				// console.log(personQiang);
 				max.sort(function(a,b){return b-a});
 				var now=max[0];
 				// console.log(now);
-				// console.log(personQiang);
-				// console.log(max);
+				console.log(personQiang);
+				console.log(max);
 				max=[];
 				for(var i=0;i<9;i++){
 					if(personQiang[i]==now&&personState[i]==1){
@@ -343,47 +650,272 @@ function update(){
 					}
 				}
 				console.log(max);
+				mine.cathectic.visible=false;
+				person1.cathectic.visible=false;
+				person2.cathectic.visible=false;
+				person3.cathectic.visible=false;
 				if(max.length>1){
-					var zhuang=Math.floor(Math.random()*max.length);
-					switch(zhuang){
+					var random=Math.floor(Math.random()*max.length);
+					switch(max[random]){
 						case 0:
 							mine.zhuang=1;
+							mine.multiple=personQiang[0];         
+							zhuang.x=80;
+							zhuang.y=_height-180;
+							mine.cathectic.visible=true;
 						break;
 						case 1:
 							person1.zhuang=1;
+							person1.multiple=personQiang[1];
+							zhuang.x=_width-120;
+							zhuang.y=_height*2/3;
+							person1.cathectic.visible=true;
 						break;						
 						case 2:
+							person2.multiple=personQiang[2];
 							person2.zhuang=1;
+							zhuang.x=_width-120;
+							zhuang.y=_height/2;
+							person2.cathectic.visible=true;
 						break;
 						case 3:
+							person3.multiple=personQiang[3];
 							person3.zhuang=1;
+							zhuang.x=80;
+							zhuang.y=_height*2/3;
+							person3.cathectic.visible=true;
 						break;
 					}	
 				}else if(max.length==1){
 					switch(max[0]){
 						case 0:
-							mine.zhuang=1;
+							mine.multiple=personQiang[0];
+							mine.zhuang=1;							
+							zhuang.x=80;
+							zhuang.y=_height-180;
+							mine.cathectic.visible=true;
 						break;
 						case 1:
-							person1.zhuang=1;
+							person1.multiple=personQiang[1];
+							person1.zhuang=1;							
+							zhuang.x=_width-120;
+							zhuang.y=_height*2/3;
+							person1.cathectic.visible=true;
 						break;						
 						case 2:
+							person2.multiple=personQiang[2];
 							person2.zhuang=1;
+							zhuang.x=_width-120;
+							zhuang.y=_height/2;
+							person2.cathectic.visible=true;
 						break;
 						case 3:
 							person3.zhuang=1;
+							person3.multiple=personQiang[3];
+							zhuang.x=80;
+							zhuang.y=_height*2/3;
+							person3.cathectic.visible=true;
 						break;
 					}	
 				}
-				// console.log(mine.zhuang);
-				// console.log(person1.zhuang);
-				// console.log(person2.zhuang);
-				// console.log(person3.zhuang);
+				cathectic=1;
+				check=false;
+				readyDelay=0;
+				timer.visible=true;
+				deal=0;
+			}else{
+				if(delay==0){
+					if(personState[1]==1){
+						personQiang[1]=Math.floor(Math.random()*4);
+						personQiang[1]=(personQiang[1]==3?4:personQiang[1]);						
+						max[1]=personQiang[1];
+						person1.cathectic.visible=true;
+						person1.cathectic.frame=personQiang[1];
+					}			
+					if(personState[2]==1){
+						personQiang[2]=Math.floor(Math.random()*4);
+						personQiang[2]=(personQiang[2]==3?4:personQiang[2]);						
+						max[2]=personQiang[2];
+						person2.cathectic.visible=true;
+						person2.cathectic.frame=personQiang[2];
+					}			
+					if(personState[3]==1){
+						personQiang[3]=Math.floor(Math.random()*4);
+						personQiang[3]=(personQiang[3]==3?4:personQiang[3]);						
+						max[3]=personQiang[3];
+						person3.cathectic.visible=true;
+						person3.cathectic.frame=personQiang[3];
+					}
+					delay=1;
+				}
+				readyDelay++;
+				timer.text=(Math.floor((300-readyDelay)/60)>=0?Math.floor((300-readyDelay)/60):0);
+			}
+		}
+		if(cathectic>0){
+			if(mine.readyState==1&&mine.zhuang==0&&!check){
+				qiang.one.x=50;
+				qiang.two.x=170;
+				qiang.three.x=290;
+				qiang.four.x=410;
+				qiang.five.x=530;
+				qiang.one.inputEnabled=true;
+				qiang.two.inputEnabled=true;
+				qiang.three.inputEnabled=true;
+				qiang.four.inputEnabled=true;
+				qiang.five.inputEnabled=true;
+				qiang.one.visible=true;
+				qiang.two.visible=true;
+				qiang.three.visible=true;
+				qiang.four.visible=true;
+				qiang.five.visible=true;
+			}
+			if(readyDelay>300&&once==0){
+				timer.visible=false;
+				mine.card5.inputEnabled=true;
+				if(person1.readyState==1&&person1.zhuang==0){
+					person1.multiple=Math.floor(Math.random()*5)+1;
+					person1.cathectic.frame=person1.multiple;
+					person1.cathectic.visible=true;
+				}				
+				if(person2.readyState==1&&person2.zhuang==0){
+					person2.multiple=Math.floor(Math.random()*5)+1;
+					person2.cathectic.frame=person2.multiple;
+					person2.cathectic.visible=true;
+				}				
+				if(person3.readyState==1&&person3.zhuang==0){
+					person3.multiple=Math.floor(Math.random()*5)+1;
+					person3.cathectic.frame=person3.multiple;
+					person3.cathectic.visible=true;
+				}
+				if(mine.readyState==1&&mine.zhuang==0&&!check){
+					mine.multiple=1;
+					mine.cathectic.frame=1;
+					mine.cathectic.visible=true;
+					qiang.one.visible=false;
+					qiang.two.visible=false;
+					qiang.three.visible=false;
+					qiang.four.visible=false;
+					qiang.five.visible=false;
+				}
+				// if(once==0){
+					// console.log(mine);
+					// console.log(person1);
+					// console.log(person2);
+					// console.log(person3);
+				// 	once=1;
+				// }
+				once=1;
+				calculation=1;
+				cathectic=0;
+				readyDelay=0;
+				check=false;
 			}else{
 				readyDelay++;
 				timer.text=(Math.floor((300-readyDelay)/60)>=0?Math.floor((300-readyDelay)/60):0);
 			}
 		}
+		if(calculation>0){
+			timer.visible=true;
+			if(readyDelay>300){
+				if(mine.readyState==1){
+					if(!check){
+						randomPoker(mine,5);
+						calculate(mine);
+						
+					}else{
+						calculate(mine);
+						show.visible=false;
+						// calculate(mine);
+					}
+					if(person1.readyState==1){
+						randomPoker(person1,1);
+						randomPoker(person1,2);
+						randomPoker(person1,3);
+						randomPoker(person1,4);
+						randomPoker(person1,5);	
+						calculate(person1);	
+					}
+					if(person2.readyState==1){
+						randomPoker(person2,1);
+						randomPoker(person2,2);
+						randomPoker(person2,3);
+						randomPoker(person2,4);
+						randomPoker(person2,5);	
+						calculate(person2);
+					}
+					if(person3.readyState==1){
+						randomPoker(person3,1);
+						randomPoker(person3,2);
+						randomPoker(person3,3);
+						randomPoker(person3,4);
+						randomPoker(person3,5);
+						calculate(person3);
+					}
+				}
+				
+				calculation=0;
+				readyDelay=0;
+				check=false;
+				timer.visible=false;
+				integration=1;	
+			}else{
+				readyDelay++;
+				timer.text=(Math.floor((300-readyDelay)/60)>=0?Math.floor((300-readyDelay)/60):0);
+			}
+		}
+		if(integration>0){
+			integration=0;
+			if(mine.readyState==1&&mine.zhuang==1){
+				if(person1.readyState==1){
+					integarte(mine,person1);
+				}
+				if(person2.readyState==1){
+					integarte(mine,person2);
+				}
+				if(person3.readyState==1){
+					integarte(mine,person3);
+				}
+			}
+			if(person1.readyState==1&&person1.zhuang==1){
+				if(mine.readyState==1){
+					integarte(mine,person1);
+				}
+				if(person2.readyState==1){
+					integarte(person1,person2);
+				}
+				if(person3.readyState==1){
+					integarte(person1,person3);
+				}
+			}			
+			if(person2.readyState==1&&person2.zhuang==1){
+				if(mine.readyState==1){
+					integarte(mine,person2);
+				}
+				if(person1.readyState==1){
+					integarte(person2,person1);
+				}
+				if(person3.readyState==1){
+					integarte(person2,person3);
+				}
+			}			
+			if(person3.readyState==1&&person3.zhuang==1){
+				if(mine.readyState==1){
+					integarte(mine,person3);
+				}
+				if(person1.readyState==1){
+					integarte(person3,person1);
+				}
+				if(person2.readyState==1){
+					integarte(person2,person3);
+				}
+			}
+			console.log(mine);
+			console.log(person1);
+			console.log(person2);
+			console.log(person3);
+		}
+		// if(){}
 	}
 	
 }
