@@ -368,6 +368,8 @@ function calculate(obj){
 	var num1;
 	var num2;
 	var flagx=0;
+	var exchange1=-1;
+	var exchange2=-1;
 	// console.log(arr2);
 	for(var i=0;i<5;i++){
 		if(arr2[i]>=10&&arr2[i]<=13){
@@ -392,6 +394,13 @@ function calculate(obj){
 		}
 	}
 	if(flagx>0){
+		exchange1=obj['card4'].frame;
+		obj['card4'].frame=obj['card'+(num2+1)].frame;
+		obj['card'+(num2+1)].frame=exchange1;	
+
+		exchange2=obj['card5'].frame;
+		obj['card5'].frame=obj['card'+(num1+1)].frame;
+		obj['card'+(num1+1)].frame=exchange2;
 		if(result==0){
 			obj.result.frame=10;
 			obj.total=10;
@@ -557,11 +566,11 @@ function update(){
 						mine.card1.height+=3.9;
 					}
 					if(personState[1]==1){
-						person1.card1.x+=locationRight;
+						person1.card1.x+=locationRight-4;
 						person1.card1.y+=(_height+315)/60;
 					}
 					if(personState[2]==1){
-						person2.card1.x+=locationRight;
+						person2.card1.x+=locationRight-4;
 						person2.card1.y+=6;		
 					}
 					if(personState[3]==1){
@@ -578,11 +587,11 @@ function update(){
 						mine.card2.height+=3.9;
 					}
 					if(personState[1]==1){
-						person1.card2.x+=(locationRight-1);
+						person1.card2.x+=(locationRight-3);
 						person1.card2.y+=(_height+315)/60;
 					}
 					if(personState[2]==1){
-						person2.card2.x+=(locationRight-1);
+						person2.card2.x+=(locationRight-3);
 						person2.card2.y+=6;
 					}
 					if(personState[3]==1){
@@ -620,11 +629,11 @@ function update(){
 						mine.card4.height+=3.9;
 					}
 					if(personState[1]==1){
-						person1.card4.x+=(locationRight-3);
+						person1.card4.x+=(locationRight-1);
 						person1.card4.y+=(_height+315)/60;	
 					}
 					if(personState[2]==1){
-						person2.card4.x+=(locationRight-3);
+						person2.card4.x+=(locationRight-1);
 						person2.card4.y+=6;
 					}
 					if(personState[3]==1){
@@ -641,11 +650,11 @@ function update(){
 						mine.card5.height+=3.9;
 					}
 					if(personState[1]==1){
-						person1.card5.x+=(locationRight-4);
+						person1.card5.x+=(locationRight);
 						person1.card5.y+=(_height+315)/60;
 					}
 					if(personState[2]==1){
-						person2.card5.x+=(locationRight-4);
+						person2.card5.x+=(locationRight);
 						person2.card5.y+=6;
 					}
 					if(personState[3]==1){
