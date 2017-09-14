@@ -18,7 +18,8 @@ var loader=new Phaser.Loader(game);
 // 	two:{heart:44,spade:45,diamond:46,club:47},
 // 	one:{heart:48,spade:49,diamond:50,club:51}
 // }
-
+var gameCount=1;
+var gameTime;
 var back=52;
 var btn={one:0,two:1,three:2,four:3,five:4,none:5};
 var ready={btn:0,text:1};
@@ -34,9 +35,14 @@ var gameFlag=false;
 var readyFlag=false;
 var deal=0;
 var once=0;
+var choose=0;
+var chooseCount=0;
+var winState=0;
+var loseState=0;
 var cathectic=0;
 var calculation=0;
 var integration=0;
+var restart=0;
 var readyCount=0;
 var mine={};
 var person1,person2,person3;
@@ -53,6 +59,7 @@ var max=[0,0,0,0,0,0,0,0,0];
 var zhuang;
 var check=false;
 var poked=[];
+var newsprite;
 // document.getElementById("game").width=width;
 // document.getElementById("game").height=height;
 function preload(){
@@ -68,14 +75,17 @@ function preload(){
 	game.load.spritesheet('cathectic','cathectic.png',60,40);
 	game.load.spritesheet('result','result.png',100,50);
 	game.load.image('showBtn','show.png',120,120);
+	game.load.image('coin','coin.png',100,86);
 }
 function create(){
-	// loader.image('new','https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1505306847393&di=b4c2d0fb961a7cdf1c8863cf5467efad&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01d62258731da9a801219c770c34d8.jpg%40900w_1l_2o_100sh.jpg');
-	// game.cache.addImage('new','https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1505306847393&di=b4c2d0fb961a7cdf1c8863cf5467efad&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01d62258731da9a801219c770c34d8.jpg%40900w_1l_2o_100sh.jpg','');
-	// console.log(cache.checkImageKey('new'));
+	// loader.image('newbg','https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1505306847393&di=b4c2d0fb961a7cdf1c8863cf5467efad&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01d62258731da9a801219c770c34d8.jpg%40900w_1l_2o_100sh.jpg');
+	game.cache.addImage('newbg','timg.jpg',{});
+	game.load.image('newbg','timg.jpg');
 	game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
 	game.input.maxPointers = 1;
 	var background = game.add.sprite(0,0,'background');
+	// console.log(game.cache);
+	gameTime=game.add.text(_width/2-20,0,'第1局',{font:'26px',fill:'#fff'} );
 	background.width=_width;
 	background.height=_height;
 	mine=person(0,0,0);
@@ -226,6 +236,7 @@ function create(){
 		calculate(mine);
 		calculation=0;
 		readyDelay=0;
+		once=0;
 		check=false;
 		timer.visible=false;
 		integration=1;
@@ -278,7 +289,9 @@ function create(){
 		// mine.card5.inputEnabled=true;
 		mine.card5.events.onInputDown.add(function(){
 			// console.log(mine.card5.frame=22);
-			randomPoker(mine,5);
+			if(mine.card5.inputEnabled){
+				randomPoker(mine,5);
+			}
 			check=true;
 			mine.card5.inputEnabled=false;
 			show.visible=true;
@@ -316,6 +329,15 @@ function create(){
 	person3.result.visible=false;
 	person3.num=game.add.text(50,_height*2/3+100,'0',{font: '20px',fill:'#fff',align: "center"});
 
+	mine.coin=game.add.sprite(10,_height-150,'coin');
+	mine.coin.visible=false;
+	person1.coin=game.add.sprite((_width-100),_height*2/3+20,'coin');
+	person1.coin.visible=false;
+	person2.coin=game.add.sprite((_width-100),_height/2+20,'coin');
+	person2.coin.visible=false;
+	person3.coin=game.add.sprite(20,_height*2/3+20,'coin');
+	person3.coin.visible=false;
+
 	timer=game.add.text(_width/2-20,_height*2/3,'10',{font:'40px',fill:'#f00'});
 	timer.visible=false;
 	zhuang=game.add.sprite(-50,-50,'zhuang');
@@ -329,9 +351,12 @@ function randomPoker(obj,n){
 	}else{
 		randomPoker(obj,n);
 	}
+	if(obj==mine){
+		mine.card5.inputEnabled=false;
+	}
 }
 function calculate(obj){
-	console.log(obj.id);
+	// console.log(obj.id);
 	var arr=obj.arr;
 	var arr2=[];
 	for(var i=0;i<5;i++){
@@ -343,7 +368,7 @@ function calculate(obj){
 	var num1;
 	var num2;
 	var flagx=0;
-	console.log(arr2);
+	// console.log(arr2);
 	for(var i=0;i<5;i++){
 		if(arr2[i]>=10&&arr2[i]<=13){
 			sum+=0;
@@ -354,7 +379,7 @@ function calculate(obj){
 		}
 	}
 	result=sum%10;
-	console.log(sum+' '+result);
+	// console.log(sum+' '+result);
 	for(var m=0;m<5;m++){
 		for(var n=m+1;n<5;n++){
 			if((arr3[m]+arr3[n])%10==(result)){
@@ -379,7 +404,29 @@ function calculate(obj){
 		obj.total=0;
 	}
 	obj.result.visible=true;
-	// console.log(arr2);
+	console.log(obj.id+' result: '+result+' sum:'+sum);
+	console.log(arr2);
+}
+function reset(obj){
+	for(var i=1;i<6;i++){
+		obj['card'+i].x=(_width-50)/2;
+		obj['card'+i].y=(_height-65)/2;
+		obj['card'+i].frame=52;
+		obj['card'+i].width=50;
+		obj['card'+i].height=65;
+	}
+		obj.readyState=0;
+		obj.multiple=0;
+		obj.cathectic.visible=false;
+		obj.result.visible=false;
+		obj.zhuang=0;
+		obj.total=0;
+		obj.arr=[];
+		if(obj==mine){
+			ready.btn.visible=true;
+		}else{
+			obj.btn.visible=true;
+		}
 }
 function person(w,h,id){
 	var obj={card1:'',card2:'',card3:'',card4:'',card5:''};
@@ -408,6 +455,7 @@ function person(w,h,id){
 		obj.zhuang=0;
 		obj.arr=[];
 		obj.point=0;
+		obj.win=0;
 	}
 	return obj;	
 }
@@ -426,6 +474,7 @@ function integarte(obj1,obj2){
 			obj1.point+=obj1.multiple*obj2.multiple*1;
 			obj2.point-=obj1.multiple*obj2.multiple*1;
 		}
+		obj2.win=1;
 	}else if(obj1.total==obj2.total){
 		obj1.arr.sort(function(a,b){return a-b});
 		obj2.arr.sort(function(a,b){return a-b});
@@ -443,6 +492,7 @@ function integarte(obj1,obj2){
 				obj1.point+=obj1.multiple*obj2.multiple*1;
 				obj2.point-=obj1.multiple*obj2.multiple*1;
 			}
+			obj2.win=1;
 		}else if(obj1.arr[0]>obj2.arr[0]){
 			if(obj2.total==10){
 				obj2.point+=obj2.multiple*obj1.multiple*4;
@@ -457,6 +507,7 @@ function integarte(obj1,obj2){
 				obj2.point+=obj2.multiple*obj1.multiple*1;
 				obj1.point-=obj2.multiple*obj1.multiple*1;
 			}
+			obj2.win=2;
 		}
 	}else if(obj1.total<obj2.total){
 		if(obj2.total==10){
@@ -472,15 +523,17 @@ function integarte(obj1,obj2){
 			obj2.point+=obj2.multiple*obj1.multiple*1;
 			obj1.point-=obj2.multiple*obj1.multiple*1;
 		}
+		obj2.win=2;
 	}
 	obj1.num.setText(obj1.point);
 	obj2.num.setText(obj2.point);
 }
 function update(){
-	if(!gameFlag){
+	if(gameCount<13){
 		if(readyCount>1){
 			timer.visible=true;
 			if(readyDelay>600){
+				// console.log('readycount');
 				ready.btn.visible=false;
 				ready.text.visible=false;
 				// mine.readyState=0;
@@ -605,6 +658,11 @@ function update(){
 					readyCount=0;
 					deal=1;
 					readyDelay=0;
+					animation1=0;
+					animation2=0;
+					animation3=0;
+					animation4=0;
+					animation5=0;
 				}
 			}else{
 				if(readyCount>3){
@@ -623,6 +681,10 @@ function update(){
 				qiang.two.inputEnabled=true;
 				qiang.four.inputEnabled=true;
 				qiang.none.inputEnabled=true;
+				qiang.one.x=150;
+				qiang.two.x=270;
+				qiang.four.x=390;
+				qiang.none.x=510;
 				qiang.one.visible=true;
 				qiang.two.visible=true;
 				qiang.four.visible=true;
@@ -637,56 +699,52 @@ function update(){
 					qiang.none.visible=false;
 				}
 				deal=0;
-				// console.log(personQiang);
 				max.sort(function(a,b){return b-a});
 				var now=max[0];
-				// console.log(now);
-				console.log(personQiang);
-				console.log(max);
 				max=[];
 				for(var i=0;i<9;i++){
 					if(personQiang[i]==now&&personState[i]==1){
 						max.push(i);
 					}
 				}
-				console.log(max);
-				mine.cathectic.visible=false;
-				person1.cathectic.visible=false;
-				person2.cathectic.visible=false;
-				person3.cathectic.visible=false;
 				if(max.length>1){
 					var random=Math.floor(Math.random()*max.length);
 					switch(max[random]){
 						case 0:
 							mine.zhuang=1;
 							mine.multiple=personQiang[0];         
-							zhuang.x=80;
-							zhuang.y=_height-180;
-							mine.cathectic.visible=true;
+							// zhuang.x=80;
+							// zhuang.y=_height-180;
+							// mine.cathectic.visible=true;
 						break;
 						case 1:
 							person1.zhuang=1;
 							person1.multiple=personQiang[1];
-							zhuang.x=_width-120;
-							zhuang.y=_height*2/3;
-							person1.cathectic.visible=true;
+							// zhuang.x=_width-120;
+							// zhuang.y=_height*2/3;
+							// person1.cathectic.visible=true;
 						break;						
 						case 2:
 							person2.multiple=personQiang[2];
 							person2.zhuang=1;
-							zhuang.x=_width-120;
-							zhuang.y=_height/2;
-							person2.cathectic.visible=true;
+							// zhuang.x=_width-120;
+							// zhuang.y=_height/2;
+							// person2.cathectic.visible=true;
 						break;
 						case 3:
 							person3.multiple=personQiang[3];
 							person3.zhuang=1;
-							zhuang.x=80;
-							zhuang.y=_height*2/3;
-							person3.cathectic.visible=true;
+							// zhuang.x=80;
+							// zhuang.y=_height*2/3;
+							// person3.cathectic.visible=true;
 						break;
 					}	
+					choose=1;	
 				}else if(max.length==1){
+					mine.cathectic.visible=false;
+					person1.cathectic.visible=false;
+					person2.cathectic.visible=false;
+					person3.cathectic.visible=false;
 					switch(max[0]){
 						case 0:
 							mine.multiple=personQiang[0];
@@ -717,11 +775,14 @@ function update(){
 							person3.cathectic.visible=true;
 						break;
 					}	
+					cathectic=1;
+					timer.visible=true;
 				}
-				cathectic=1;
+				// cathectic=1;
 				check=false;
 				readyDelay=0;
-				timer.visible=true;
+				// timer.visible=true;
+				delay=0;
 				deal=0;
 			}else{
 				if(delay==0){
@@ -750,6 +811,65 @@ function update(){
 				}
 				readyDelay++;
 				timer.text=(Math.floor((300-readyDelay)/60)>=0?Math.floor((300-readyDelay)/60):0);
+			}
+		}
+		if(choose>0){
+			if(readyDelay>120){
+				chooseCount=0;
+				mine.cathectic.visible=false;
+				person1.cathectic.visible=false;
+				person2.cathectic.visible=false;
+				person3.cathectic.visible=false;
+				if(mine.zhuang==1){
+					zhuang.x=80;
+					zhuang.y=_height-180;
+					mine.cathectic.visible=true;
+				}
+				if(person1.zhuang==1){
+					zhuang.x=_width-120;
+					zhuang.y=_height*2/3;
+					person1.cathectic.visible=true;
+				}
+				if(person2.zhuang==1){
+					zhuang.x=_width-120;
+					zhuang.y=_height/2;
+					person2.cathectic.visible=true;
+				}
+				if(person3.zhuang==1){
+					zhuang.x=80;
+					zhuang.y=_height*2/3;
+					person3.cathectic.visible=true;
+				}
+				choose=0;
+				cathectic=1;
+				timer.visible=true;
+				readyDelay=0;
+				chooseCount=0;
+			}else{
+				readyDelay++;
+				if(readyDelay%10==0){
+					if(max[chooseCount]==0){
+						zhuang.x=80;
+						zhuang.y=_height-180;
+					}
+					if(max[chooseCount]==1){
+						zhuang.x=_width-120;
+						zhuang.y=_height*2/3;
+					}
+					if(max[chooseCount]==2){
+						zhuang.x=_width-120;
+						zhuang.y=_height/2;
+					}
+					if(max[chooseCount]==3){
+						zhuang.x=80;
+						zhuang.y=_height*2/3;
+					}
+					if(chooseCount>=max.length-1){
+						chooseCount=0;
+					}else{
+						chooseCount++;
+					}
+				}
 			}
 		}
 		if(cathectic>0){
@@ -798,13 +918,6 @@ function update(){
 					qiang.four.visible=false;
 					qiang.five.visible=false;
 				}
-				// if(once==0){
-					// console.log(mine);
-					// console.log(person1);
-					// console.log(person2);
-					// console.log(person3);
-				// 	once=1;
-				// }
 				once=1;
 				calculation=1;
 				cathectic=0;
@@ -818,6 +931,7 @@ function update(){
 		if(calculation>0){
 			timer.visible=true;
 			if(readyDelay>300){
+				// console.log("摊牌");
 				if(mine.readyState==1){
 					if(!check){
 						randomPoker(mine,5);
@@ -828,6 +942,8 @@ function update(){
 						show.visible=false;
 						// calculate(mine);
 					}
+				}
+				
 					if(person1.readyState==1){
 						randomPoker(person1,1);
 						randomPoker(person1,2);
@@ -852,13 +968,12 @@ function update(){
 						randomPoker(person3,5);
 						calculate(person3);
 					}
-				}
-				
 				calculation=0;
 				readyDelay=0;
 				check=false;
 				timer.visible=false;
-				integration=1;	
+				integration=1;
+				once=0;	
 			}else{
 				readyDelay++;
 				timer.text=(Math.floor((300-readyDelay)/60)>=0?Math.floor((300-readyDelay)/60):0);
@@ -879,7 +994,7 @@ function update(){
 			}
 			if(person1.readyState==1&&person1.zhuang==1){
 				if(mine.readyState==1){
-					integarte(mine,person1);
+					integarte(person1,mine);
 				}
 				if(person2.readyState==1){
 					integarte(person1,person2);
@@ -890,7 +1005,7 @@ function update(){
 			}			
 			if(person2.readyState==1&&person2.zhuang==1){
 				if(mine.readyState==1){
-					integarte(mine,person2);
+					integarte(person2,mine);
 				}
 				if(person1.readyState==1){
 					integarte(person2,person1);
@@ -901,19 +1016,248 @@ function update(){
 			}			
 			if(person3.readyState==1&&person3.zhuang==1){
 				if(mine.readyState==1){
-					integarte(mine,person3);
+					integarte(person3,mine);
 				}
 				if(person1.readyState==1){
 					integarte(person3,person1);
 				}
 				if(person2.readyState==1){
-					integarte(person2,person3);
+					integarte(person3,person2);
 				}
 			}
-			console.log(mine);
-			console.log(person1);
-			console.log(person2);
-			console.log(person3);
+			// restart=1;
+			winState=1;
+			// console.log(mine);
+			// console.log(person1);
+			// console.log(person2);
+			// console.log(person3);
+		}
+		if(winState>0){
+			if(readyDelay>60){
+				readyDelay=0;
+				winState=0;
+				loseState=1;
+				mine.coin.visible=false;
+				person1.coin.visible=false;
+				person2.coin.visible=false;
+				person3.coin.visible=false;
+				if(mine.readyState==1&&mine.zhuang==1){
+					mine.coin.x=10;
+					mine.coin.y=_height-150;				
+					person1.coin.x=10;
+					person1.coin.y=_height-150;				
+					person2.coin.x=10;
+					person2.coin.y=_height-150;				
+					person3.coin.x=10;
+					person3.coin.y=_height-150;
+				}
+				if(person1.readyState==1&&person1.zhuang==1){
+					mine.coin.x=_width-100;
+					mine.coin.y=_height*2/3+20;				
+					person1.coin.x=_width-100;
+					person1.coin.y=_height*2/3+20;				
+					person2.coin.x=_width-100;
+					person2.coin.y=_height*2/3+20;				
+					person3.coin.x=_width-100;
+					person3.coin.y=_height*2/3+20;
+				}				
+				if(person2.readyState==1&&person2.zhuang==1){
+					mine.coin.x=_width-100;
+					mine.coin.y=_height/2+20;				
+					person1.coin.x=_width-100;
+					person1.coin.y=_height/2+20;				
+					person2.coin.x=_width-100;
+					person2.coin.y=_height/2+20;				
+					person3.coin.x=_width-100;
+					person3.coin.y=_height/2+20;
+				}				
+				if(person3.readyState==1&&person3.zhuang==1){
+					mine.coin.x=20;
+					mine.coin.y=_height*2/3+20;				
+					person1.coin.x=20;
+					person1.coin.y=_height*2/3+20;				
+					person2.coin.x=20;
+					person2.coin.y=_height*2/3+20;				
+					person3.coin.x=20;
+					person3.coin.y=_height*2/3+20;
+				}
+			}else{
+				readyDelay++;
+				if(mine.readyState==1&&mine.zhuang==1){
+					if(person1.readyState==1&&person1.win==1){
+						person1.coin.visible=true;
+						person1.coin.x-=(_width-110)/60;
+						person1.coin.y+=(_height/3-170)/60;
+					}
+					if(person2.readyState==1&&person2.win==1){
+						person2.coin.visible=true;
+						person2.coin.x-=(_width-110)/60;
+						person2.coin.y+=(_height/2-170)/60;
+					}
+					if(person3.readyState==1&&person3.win==1){
+						person3.coin.visible=true;
+						person3.coin.x-=10/60;
+						person3.coin.y+=(_height/3-170)/60;
+					}
+				}
+				if(person1.readyState==1&&person1.zhuang==1){
+					if(mine.readyState==1&&mine.win==1){
+						mine.coin.visible=true;
+						mine.coin.x+=(_width-110)/60;
+						mine.coin.y-=(_height/3-170)/60;
+					}
+					if(person2.readyState==1&&person2.win==1){
+						person2.coin.visible=true;
+						person2.coin.y+=(_height/6)/60;
+					}
+					if(person3.readyState==1&&person3.win==1){
+						person3.coin.visible=true;
+						person3.coin.x+=(_width-120)/60;
+					}
+				}
+				if(person2.readyState==1&&person2.zhuang==1){
+					if(mine.readyState==1&&mine.win==1){
+						mine.coin.visible=true;
+						mine.coin.x+=(_width-110)/60;
+						mine.coin.y-=(_height/2-170)/60;
+					}
+					if(person1.readyState==1&&person1.win==1){
+						person1.coin.visible=true;
+						person1.coin.y-=(_height/6)/60;
+					}
+					if(person3.readyState==1&&person3.win==1){
+						person3.coin.visible=true;
+						person3.coin.x+=(_width-120)/60;
+						person3.coin.y-=(_height/6)/60;
+					}
+				}
+				if(person3.readyState==1&&person3.zhuang==1){
+					if(mine.readyState==1&&mine.win==1){
+						mine.coin.visible=true;
+						mine.coin.x+=10/60;
+						mine.coin.y-=(_height/3-170)/60;
+					}
+					if(person1.readyState==1&&person1.win==1){
+						person1.coin.visible=true;
+						person1.coin.x-=(_width-120)/60;
+					}
+					if(person2.readyState==1&&person2.win==1){
+						person2.coin.visible=true;
+						person2.coin.x-=(_width-120)/60;
+						person2.coin.y+=(_height/6)/60;
+					}
+				}
+
+			}
+		}
+		if(loseState>0){
+			if(readyDelay>60){
+				readyDelay=0;
+				loseState=0;
+				restart=1;
+				mine.coin.visible=false;
+				person1.coin.visible=false;
+				person2.coin.visible=false;
+				person3.coin.visible=false;
+				mine.coin.x=10;
+				mine.coin.y=_height-150;
+				person1.coin.x=_width-100;
+				person1.coin.y=_height*2/3+20;				
+				person2.coin.x=_width-100;
+				person2.coin.y=_height/2+20;				
+				person3.coin.x=20;
+				person3.coin.y=_height*2/3+20;
+			}else{
+				readyDelay++;
+				if(mine.readyState==1&&mine.zhuang==1){
+					if(person1.readyState==1&&person1.win==2){
+						person1.coin.visible=true;
+						person1.coin.x+=(_width-110)/60;
+						person1.coin.y-=(_height/3-170)/60;
+					}
+					if(person2.readyState==1&&person2.win==2){
+						person2.coin.visible=true;
+						person2.coin.x+=(_width-110)/60;
+						person2.coin.y-=(_height/2-170)/60;
+					}
+					if(person3.readyState==1&&person3.win==2){
+						person3.coin.visible=true;
+						person3.coin.x+=10/60;
+						person3.coin.y-=(_height/3-170)/60;
+					}
+				}
+				if(person1.readyState==1&&person1.zhuang==1){
+					if(mine.readyState==1&&mine.win==2){
+						mine.coin.visible=true;
+						mine.coin.x-=(_width-110)/60;
+						mine.coin.y+=(_height/3-170)/60;
+					}
+					if(person2.readyState==1&&person2.win==2){
+						person2.coin.visible=true;
+						person2.coin.y-=(_height/6)/60;
+					}
+					if(person3.readyState==1&&person3.win==2){
+						person3.coin.visible=true;
+						person3.coin.x-=(_width-120)/60;
+					}
+				}
+				if(person2.readyState==1&&person2.zhuang==1){
+					if(mine.readyState==1&&mine.win==2){
+						mine.coin.visible=true;
+						mine.coin.x-=(_width-110)/60;
+						mine.coin.y+=(_height/2-170)/60;
+					}
+					if(person1.readyState==1&&person1.win==2){
+						person1.coin.visible=true;
+						person1.coin.y+=(_height/6)/60;
+					}
+					if(person3.readyState==1&&person3.win==2){
+						person3.coin.visible=true;
+						person3.coin.x-=(_width-120)/60;
+						person3.coin.y+=(_height/6)/60;
+					}
+				}
+				if(person3.readyState==1&&person3.zhuang==1){
+					if(mine.readyState==1&&mine.win==2){
+						mine.coin.visible=true;
+						mine.coin.x-=10/60;
+						mine.coin.y+=(_height/3-170)/60;
+					}
+					if(person1.readyState==1&&person1.win==2){
+						person1.coin.visible=true;
+						person1.coin.x+=(_width-120)/60;
+					}
+					if(person2.readyState==1&&person2.win==2){
+						person2.coin.visible=true;
+						person2.coin.x+=(_width-120)/60;
+						person2.coin.y-=(_height/6)/60;
+					}
+				}
+
+			}
+		}
+		if(restart>0){
+			timer.visible=true;
+			if(readyDelay>300){
+				readyDelay=0;
+				restart=0;
+				timer.visible=false;
+				reset(mine);
+				reset(person1);
+				reset(person2);
+				reset(person3);
+				gameCount++;
+				gameTime.text='第'+gameCount+'局';
+				zhuang.x=-50;
+				zhuang.y=-50;
+				poked=[];
+				max=[0,0,0,0,0,0,0,0,0];
+				personState=[0,0,0,0,0,0,0,0,0];
+				personQiang=[0,0,0,0,0,0,0,0,0];
+			}else{
+				readyDelay++;
+				timer.text=(Math.floor((300-readyDelay)/60)>=0?Math.floor((300-readyDelay)/60):0);
+			}
 		}
 		// if(){}
 	}
