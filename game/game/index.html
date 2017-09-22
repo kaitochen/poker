@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0">
+	<meta charset="utf-8">
+	<title>游戏</title>
+	<style type="text/css">
+		body{
+			margin: 0;
+		}
+		p{
+			margin: 0;
+			padding: 0;
+		}
+		#cover{
+			width: 1000px;
+			height: 1000px;
+			background-color: rgba(0,0,0,1);
+			position: fixed;
+			top: 0;
+			left: 0;
+		}
+		#dialog{
+			width: 100%;
+			height: 1000px;
+			position: fixed;
+			top: 0;
+			left: 0;
+			background-color: rgba(0,0,0,0.5);
+			display: none;
+		}
+		#dialog > p{
+			width: 80%;
+			margin: 0 10%;
+			color: #fff;
+			font-size: 20px;
+
+		}
+	</style>
+	<script type="text/javascript" src="phaser.min.js"></script>	
+	<!-- <script type="text/javascript" src="./scripts/index.js"></script> -->
+	<script type="text/javascript" src="./scripts/Boot.js"></script>
+	<script type="text/javascript" src="./scripts/Preloader.js"></script>
+	<script type="text/javascript" src="./scripts/Check.js"></script>
+	<script type="text/javascript" src="./scripts/Game.js"></script>
+	<script type="text/javascript" src="./scripts/End.js"></script>
+</head>
+<body>
+<!-- 	<div id="game"></div>
+	<div id="cover"></div>
+	<div id="dialog"></div> -->
+	<canvas id='end' width='375px' height='660px' style="display: none"></canvas>
+	<img id='bg' src="image/board.png" style='display: none'>
+	<img id='btn' src="image/save.png" style='display: none'>
+	<img id="img" style='z-index: 100;position: absolute; top: 0;display: none'>
+	<script type="text/javascript">
+	(function(){
+		var width = window.innerWidth*2;
+		var height = window.innerHeight*2;
+		var game = new Phaser.Game(width, height, Phaser.AUTO, "game");
+		game.state.add('Boot', Game.Boot);
+		game.state.add('Preloader', Game.Preloader);
+		game.state.add('Check', Game.Check);
+		game.state.add('Game', Game.Game);
+		// game.state.add('main', Game.main);
+		game.state.add('End', Game.End);
+		game.state.start('Boot');
+
+	})();	
+	</script>
+</body>
+	<!-- <script type="text/javascript" src="./scripts/Menu.js"></script> -->
+	<!-- <script type="text/javascript" src="./scripts/main.js"></script> -->
+	<!-- <script type="text/javascript" src="./scripts/End.js"></script> -->
+</html>

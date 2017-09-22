@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>斗牛算法</title>
+	<style type="text/css">
+		body{
+			margin: 0;
+			padding: 0;
+		}
+		#num{
+			width: 600px;
+			height: 100px;
+		}
+		.num{
+			display: inline-block;
+			width: 100px;
+			height: 100px;
+			background-color: #999;
+			margin: 0;
+			font-size: 20px;
+			line-height: 100px;
+			text-align: center;
+			color: #fff;
+		}
+		#result{
+			width: 300px;
+			height: 100px;
+			border: 2px solid #999;
+			text-align: center;
+			font-size: 30px;
+			line-height: 100px;
+		}
+	</style>
+</head>
+<body>
+	<div id="num">
+		<span class="num"></span>
+		<span class="num"></span>
+		<span class="num"></span>
+		<span class="num"></span>
+		<span class="num"></span>
+	</div>
+	<button onclick='random()'>随机</button>
+	<button onclick='calculate()'>计算</button>
+	<p id="result"></p>
+</body>
+<script type="text/javascript">
+	var arr=[];
+	var card=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+	var flag=0;
+function random(){
+	// for(var i=0;i<5;i++){
+	// 	arr[i]=Math.ceil(Math.random()*13);
+	// }
+	// for(var j=0;j<5;j++){
+	// 	document.getElementsByClassName('num')[j].innerHTML=card[arr[j]-1];
+	// }	
+	flag=0;
+	arr=[11,12,4,5,1];
+}
+function calculate(){
+	console.log(arr)
+	var arr2=[];
+	var result=0;
+	var sum=0;
+	var num1;
+	var num2;
+	for(var i=0;i<5;i++){
+		if(arr[i]>=10&&arr[i]<=13){
+			sum+=0;
+			arr2[i]=0;	
+		}else{
+			sum+=arr[i];
+			arr2[i]=arr[i];
+		}
+	}
+	console.log(arr2);
+	result=sum%10;
+	// console.log('result:'+result);
+	// console.log((arr2[0]+arr2[1])%10==result);
+	for(var m=0;m<5;m++){
+		for(var n=m+1;n<5;n++){
+			console.log(m+' '+n);
+			if((arr2[m]+arr2[n])%10==(result)){
+				console.log((sum-arr2[m]-arr2[n]));
+				if((sum-arr2[m]-arr2[n])%10==0){
+					num1=m;
+					num2=n;
+					flag++;
+					console.log(m+' '+n);
+				}
+			}
+		}
+	}
+	if(flag>0){
+		if(result==0){
+			document.getElementById('result').innerHTML='牛牛';
+		}else{
+			document.getElementById('result').innerHTML='牛'+result;
+		}
+	}else{
+		document.getElementById('result').innerHTML='没牛';
+	}
+}	
+</script>
+</html>
